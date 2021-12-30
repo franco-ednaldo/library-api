@@ -1,4 +1,4 @@
-package com.example.libraryapi;
+package com.example.libraryapi.api.resource;
 
 import com.example.libraryapi.api.dto.BookDto;
 import com.example.libraryapi.exception.BusinessException;
