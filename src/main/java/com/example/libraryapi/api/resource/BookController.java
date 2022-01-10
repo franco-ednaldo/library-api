@@ -2,6 +2,7 @@ package com.example.libraryapi.api.resource;
 
 import com.example.libraryapi.api.dto.BookDto;
 import com.example.libraryapi.api.erros.ApiErros;
+import com.example.libraryapi.exception.BookNotFound;
 import com.example.libraryapi.exception.BusinessException;
 import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.service.BookService;
@@ -34,6 +35,26 @@ public class BookController {
 
     }
 
+    @GetMapping("{id}")
+    public BookDto findById(@PathVariable Integer id) {
+        var book = this.bookService.findBookById(id);
+        return modelMapper.map(book, BookDto.class);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(@PathVariable("id") final Integer id, @RequestBody BookDto bookDto) {
+        var book = this.bookService.findBookById(id);
+        this.bookService.update(id, book);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") final Integer id) {
+        var book = this.bookService.findBookById(id);
+        this.bookService.delete(book);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErros handleValidationException(MethodArgumentNotValidException ex) {
@@ -43,6 +64,12 @@ public class BookController {
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErros handleBusinessException(BusinessException ex) {
+        return new ApiErros(ex);
+    }
+
+    @ExceptionHandler(BookNotFound.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErros handleBusinessException(BookNotFound ex) {
         return new ApiErros(ex);
     }
 

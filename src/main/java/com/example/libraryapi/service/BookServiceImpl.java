@@ -1,5 +1,6 @@
 package com.example.libraryapi.service;
 
+import com.example.libraryapi.exception.BookNotFound;
 import com.example.libraryapi.exception.BusinessException;
 import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.model.repository.BookRepository;
@@ -23,6 +24,22 @@ public class BookServiceImpl implements BookService {
 
         var savedbook = this.repository.save(book);
         return savedbook;
+    }
+
+    @Override
+    public Book findBookById(Integer id) {
+        return this.repository.findById(id)
+                .orElseThrow(() -> new BookNotFound("Book não encontrado"));
+    }
+
+    @Override
+    public void update(Integer id, Book book) {
+
+    }
+
+    @Override
+    public void delete(Book book) {
+        this.repository.delete(book);
     }
 
     private boolean verifyIsbnDuplicate(String isbn) {

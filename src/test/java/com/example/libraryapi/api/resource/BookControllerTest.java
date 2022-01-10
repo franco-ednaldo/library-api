@@ -1,10 +1,10 @@
 package com.example.libraryapi.api.resource;
 
 import com.example.libraryapi.api.dto.BookDto;
+import com.example.libraryapi.exception.BookNotFound;
 import com.example.libraryapi.exception.BusinessException;
 import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.service.BookService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -108,9 +109,128 @@ public class BookControllerTest {
                 .andExpect(jsonPath("erros", hasSize(1)))
                 .andExpect(jsonPath("erros[0]").value(messageError));
 
+    }
 
+    @Test
+    @DisplayName("Deve atualizar um book")
+    public void update() throws Exception {
+        final Integer bookId = 1;
+        var book = Book.builder()
+                .id(bookId)
+                .author("Fulano")
+                .title("Aventuras de Fulano")
+                .isbn("123")
+                .build();
 
+        BDDMockito.given(this.bookService.findBookById(anyInt())).willReturn(book);
+        String json = new ObjectMapper().writeValueAsString(BookDto.builder()
+                .isbn("123")
+                .title("Aventuras de Fulano")
+                .author("Fulano")
+                .build());
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/").concat(bookId.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+    }
+    @Test
+    @DisplayName("Deve retornar exception quando o livro não for encontrado um book")
+    public void updateWihtBookNotFound() throws Exception {
+        final Integer bookId = 1;
 
+        BDDMockito.given(this.bookService.findBookById(anyInt()))
+                .willThrow(new BookNotFound("Book não encontrado"));
+
+        String json = new ObjectMapper().writeValueAsString(BookDto.builder()
+                .isbn("123")
+                .title("Aventuras de Fulano")
+                .author("Fulano")
+                .build());
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/").concat(bookId.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBook() throws Exception {
+        final Integer bookId = 1;
+        BDDMockito.given(this.bookService.findBookById(bookId)).willReturn(
+                Book.builder()
+                        .id(bookId)
+                        .build()
+        );
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/" + 1));
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Deve lança uma exception quando livro não encontrado")
+    public void deleteBookNotFound() throws Exception {
+        final Integer bookId = 1;
+        BDDMockito.given(this.bookService.findBookById(bookId))
+                .willThrow(new BookNotFound("Book não encontrado"));
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/" + 1));
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve retornar um livro pelo id")
+    public void findBookById() throws Exception {
+        var id = 1;
+        var book = Book.builder()
+                .id(id)
+                .author("Fulano")
+                .title("Aventuras de fulano")
+                .isbn("123")
+                .build();
+        BDDMockito.given(this.bookService.findBookById(id)).willReturn(book);
+
+        MockHttpServletRequestBuilder requestBuilder =
+                MockMvcRequestBuilders
+                        .get(BOOK_API.concat("/" + id))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("author").value("Fulano"))
+                .andExpect(jsonPath("title").value("Aventuras de fulano"))
+                .andExpect(jsonPath("isbn").value("123"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar o código de status 404 quando não encontra o livro")
+    public void findByIdNotFound() throws Exception {
+        var id = 1;
+        var messageError = "Book não encontrado";
+
+        BDDMockito.given(this.bookService.findBookById(id)).willThrow(new BookNotFound(messageError));
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + id))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("erros", hasSize(1)))
+                .andExpect(jsonPath("erros[0]").value(messageError));
     }
 
 
