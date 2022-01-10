@@ -33,8 +33,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void update(Integer id, Book book) {
-
+    public void update(Book book) {
+        this.repository.save(book);
     }
 
     @Override

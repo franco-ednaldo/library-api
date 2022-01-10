@@ -45,7 +45,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@PathVariable("id") final Integer id, @RequestBody BookDto bookDto) {
         var book = this.bookService.findBookById(id);
-        this.bookService.update(id, book);
+        this.bookService.update(book);
     }
 
     @DeleteMapping("/{id}")
