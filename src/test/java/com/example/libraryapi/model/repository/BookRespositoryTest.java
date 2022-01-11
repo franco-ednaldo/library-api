@@ -42,6 +42,15 @@ public class BookRespositoryTest {
         assertThat(exists).isFalse();
     }
 
+    @Test
+    @DisplayName("Deve retornar um livro consultado pelo id")
+    public void returnBookById(){
+        var book = getBook("Faulano", "Aventuras de Fulano", "123456");
+        this.persist(book);
+        var bookById = this.repository.findById(book.getId());
+        assertThat(bookById.isPresent()).isTrue();
+    }
+
     private Book getBook(String author, String title, String isbn) {
         return Book.builder()
                 .title(title)
@@ -51,6 +60,6 @@ public class BookRespositoryTest {
     }
 
     public void persist(Book book) {
-        this.testEntityManager.persist(book);
+        book = this.testEntityManager.persist(book);
     }
 }

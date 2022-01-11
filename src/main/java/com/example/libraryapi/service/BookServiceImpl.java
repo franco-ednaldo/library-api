@@ -7,6 +7,8 @@ import com.example.libraryapi.model.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class BookServiceImpl implements BookService {
     @Autowired
@@ -34,12 +36,16 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void update(Book book) {
-        this.repository.save(book);
+        if (Objects.nonNull(book) && Objects.nonNull(book.getId())) {
+            this.repository.save(book);
+        }
     }
 
     @Override
     public void delete(Book book) {
-        this.repository.delete(book);
+        if (Objects.nonNull(book) && Objects.nonNull(book.getId())) {
+            this.repository.delete(book);
+        }
     }
 
     private boolean verifyIsbnDuplicate(String isbn) {

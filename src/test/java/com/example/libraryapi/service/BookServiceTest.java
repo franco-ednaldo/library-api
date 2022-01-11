@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -43,7 +44,7 @@ public class BookServiceTest {
                 "As Aventuras BlaBla", "123555");
 
         Mockito.when(repository.save(book)).thenReturn(bookResult);
-        Mockito.when(repository.existsByIsbn(Mockito.anyString())).thenReturn(true);
+        Mockito.when(repository.existsByIsbn(Mockito.anyString())).thenReturn(false);
         var salvedBook = this.service.save(book);
 
         assertThat(salvedBook.getId()).isGreaterThan(0);
@@ -71,6 +72,28 @@ public class BookServiceTest {
                 .hasMessage("Isbn já casdastrado!");
 
         Mockito.verify(repository, Mockito.never()).save(book);
+    }
+
+    @Test
+    @DisplayName("Deve deletar um book pelo id")
+    public void deleteBookById() {
+        final Integer bookId = 1;
+        var book = this.createComponente(bookId, "Fulano",
+                "As aventuras de Fulano", "123");
+
+        assertDoesNotThrow(() -> this.service.delete(book));
+        Mockito.verify(repository, Mockito.times(1)).delete(book);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um book")
+    public void updateBook() {
+        final Integer bookId = 1;
+        var book = this.createComponente(bookId, "Fulano",
+                "As aventuras de Fulano", "123");
+
+        this.service.update(book);
+        Mockito.verify(repository, Mockito.times(1)).save(book);
     }
 
     @Test
