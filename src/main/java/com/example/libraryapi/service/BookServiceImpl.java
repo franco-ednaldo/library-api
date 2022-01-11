@@ -5,6 +5,8 @@ import com.example.libraryapi.exception.BusinessException;
 import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.model.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -46,6 +48,11 @@ public class BookServiceImpl implements BookService {
         if (Objects.nonNull(book) && Objects.nonNull(book.getId())) {
             this.repository.delete(book);
         }
+    }
+
+    @Override
+    public Page<Book> find(Book filter, Pageable pageRequest) {
+        return null;
     }
 
     private boolean verifyIsbnDuplicate(String isbn) {

@@ -8,12 +8,17 @@ import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.service.BookService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
@@ -32,13 +37,6 @@ public class BookController {
 
         var bookDtoResult = modelMapper.map(entity, BookDto.class);
         return bookDtoResult;
-
-    }
-
-    @GetMapping("{id}")
-    public BookDto findById(@PathVariable Integer id) {
-        var book = this.bookService.findBookById(id);
-        return modelMapper.map(book, BookDto.class);
     }
 
     @PutMapping("/{id}")
@@ -55,12 +53,30 @@ public class BookController {
         this.bookService.delete(book);
     }
 
+    @GetMapping("{id}")
+    public BookDto findById(@PathVariable Integer id) {
+        var book = this.bookService.findBookById(id);
+        return modelMapper.map(book, BookDto.class);
+    }
+
+    @GetMapping
+    public Page<BookDto> find(BookDto bookDto, Pageable pageable) {
+        var filter = modelMapper.map(bookDto, Book.class);
+        var filterList = this.bookService.find(filter, pageable);
+        List<BookDto> result = filterList.stream()
+                .map(entity -> modelMapper.map(entity, BookDto.class))
+                .collect(Collectors.toList());
+
+        return new PageImpl<BookDto>(result, pageable, result.size());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErros handleValidationException(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
         return new ApiErros(bindingResult);
     }
+
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErros handleBusinessException(BusinessException ex) {
