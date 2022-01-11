@@ -11,9 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -94,6 +99,25 @@ public class BookServiceTest {
 
         this.service.update(book);
         Mockito.verify(repository, Mockito.times(1)).save(book);
+    }
+
+    @Test
+    @DisplayName("Deve retornar uma lista paginada de books")
+    public void findBooks() {
+        var book = this.createComponente(1, "Fulano",
+                "As aventuras de Fulano", "123");
+        var booksList = Arrays.asList(book);
+        var pageRequest = PageRequest.of(0, 10);
+        var books = new PageImpl<Book>(booksList, pageRequest, 1);
+
+        Mockito.when(this.repository.findAll(Mockito.any(Example.class), Mockito.any(PageRequest.class)))
+                .thenReturn(books);
+
+        var result = this.service.find(book, pageRequest);
+        assertThat(result.getContent()).isEqualTo(booksList);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageable().getPageSize()).isEqualTo(10);
     }
 
     @Test
