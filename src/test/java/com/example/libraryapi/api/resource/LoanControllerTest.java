@@ -22,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -49,7 +48,7 @@ public class LoanControllerTest {
         var loanDto = this.createLoanDto(isbn, "Fulano");
         var json = new ObjectMapper().writeValueAsString(loanDto);
         var bookReturned = createBookEntity(bookId, "Fulano", "As aventuras de Fulano", isbn);
-        var loanReturned = createLoanEntity(loanId, isbn, "Fulano");
+        var loanReturned = createLoanEntity(loanId, "Fulano", bookReturned);
 
         BDDMockito.given(this.bookService.findBookByIsbn(isbn)).willReturn(bookReturned);
         BDDMockito.given(this.loanService.save(Mockito.any(Loan.class))).willReturn(loanReturned);
@@ -62,15 +61,14 @@ public class LoanControllerTest {
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").value(bookId));
-
+                .andExpect(content().string("1"));
     }
 
-    private Loan createLoanEntity(Integer loanId, String isbn, String customer) {
+    private Loan createLoanEntity(Integer loanId, String customer, Book book) {
         return Loan.builder()
                 .id(loanId)
+                .book(book)
                 .customer(customer)
-                .isbn(isbn)
                 .build();
     }
 

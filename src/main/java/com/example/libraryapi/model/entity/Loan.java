@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "loan")
@@ -18,7 +19,11 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String isbn;
-
     private String customer;
+
+    private LocalDate loanDate;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private Book book;
 }
