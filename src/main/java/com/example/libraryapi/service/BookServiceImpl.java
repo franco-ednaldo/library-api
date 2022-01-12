@@ -64,6 +64,11 @@ public class BookServiceImpl implements BookService {
         return repository.findAll(example, pageRequest);
     }
 
+    @Override
+    public Book findBookByIsbn(String isbn) {
+        return this.repository.findByIsbn(isbn);
+    }
+
     private boolean verifyIsbnDuplicate(String isbn) {
         return this.repository.existsByIsbn(isbn);
     }

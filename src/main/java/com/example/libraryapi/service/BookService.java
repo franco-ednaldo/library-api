@@ -17,4 +17,6 @@ public interface BookService {
     void delete(Book id);
 
     Page<Book> find(Book filter, Pageable pageRequest);
+
+    Book findBookByIsbn(String isbn);
 }
