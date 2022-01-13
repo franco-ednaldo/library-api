@@ -28,7 +28,7 @@ public class LoanController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Integer create(@RequestBody @Valid LoanDto loanDto) {
-        var book = this.bookService.findBookById(loanDto.getId());
+        var book = this.bookService.findBookByIsbn(loanDto.getIsbn());
         var loan = Loan.builder()
                 .book(book)
                 .customer(loanDto.getCustomer())

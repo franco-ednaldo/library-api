@@ -1,11 +1,13 @@
 package com.example.libraryapi.api.resource;
 
 import com.example.libraryapi.api.dto.LoanDto;
+import com.example.libraryapi.exception.BusinessException;
 import com.example.libraryapi.model.entity.Book;
 import com.example.libraryapi.model.entity.Loan;
 import com.example.libraryapi.service.BookService;
 import com.example.libraryapi.service.LoanService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -52,6 +55,25 @@ public class LoanControllerTest {
 
         BDDMockito.given(this.bookService.findBookByIsbn(isbn)).willReturn(bookReturned);
         BDDMockito.given(this.loanService.save(Mockito.any(Loan.class))).willReturn(loanReturned);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .post(LOAN_API)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(content().string("1"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro 400 quando o livro não for encontrado para reserva")
+    public void errorCreateBookIsbnNotFound() throws Exception {
+        var messageError = "Book not found";
+        var isbn = "123";
+        var loanDto = this.createLoanDto(isbn, "Fulano");
+        var json = new ObjectMapper().writeValueAsString(loanDto);
+        BDDMockito.given(this.bookService.findBookByIsbn(Mockito.any(String.class)))
+                .willThrow(new BusinessException(messageError));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(LOAN_API)
@@ -60,8 +82,9 @@ public class LoanControllerTest {
                 .content(json);
 
         mockMvc.perform(request)
-                .andExpect(status().isCreated())
-                .andExpect(content().string("1"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("erros", hasSize(1)))
+                .andExpect(jsonPath("erros[0]").value(messageError));
     }
 
     private Loan createLoanEntity(Integer loanId, String customer, Book book) {

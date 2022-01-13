@@ -70,24 +70,4 @@ public class BookController {
         return new PageImpl<BookDto>(result, pageable, result.size());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErros handleValidationException(MethodArgumentNotValidException ex) {
-        BindingResult bindingResult = ex.getBindingResult();
-        return new ApiErros(bindingResult);
-    }
-
-    @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErros handleBusinessException(BusinessException ex) {
-        return new ApiErros(ex);
-    }
-
-    @ExceptionHandler(BookNotFound.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErros handleBusinessException(BookNotFound ex) {
-        return new ApiErros(ex);
-    }
-
-
 }
